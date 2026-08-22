@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>طراحی وب — نقشه‌ی یک صفحه</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0E1116;
+    --surface: #161B22;
+    --surface-2: #1D232C;
+    --line: #2A313C;
+    --ink: #ECEDEF;
+    --muted: #8B93A1;
+    --gold: #E8B84B;
+    --cyan: #4FA3D1;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Vazirmatn', sans-serif;
+    line-height:1.7;
+    overflow-x:hidden;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; letter-spacing:0.02em; direction:ltr; unicode-bidi:embed; }
+  a{ color:inherit; }
+  img{max-width:100%;}
+
+  /* Blueprint grid backdrop */
+  .grid-bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+  }
+
+  header{
+    position:fixed; top:0; inset-inline:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5vw;
+    backdrop-filter:blur(10px);
+    background:rgba(14,17,22,0.6);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:1.05rem; }
+  .logo .dot{ width:9px; height:9px; background:var(--gold); border-radius:1px; transform:rotate(45deg); }
+  nav{ display:flex; gap:32px; font-size:0.92rem; color:var(--muted); }
+  nav a{ transition:color 0.2s; }
+  nav a:hover{ color:var(--ink); }
+
+  section{ position:relative; z-index:1; padding:0 5vw; }
+
+  /* HERO */
+  .hero{
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+    padding-top:120px; padding-bottom:80px;
+  }
+  .eyebrow{
+    font-size:0.82rem; color:var(--gold); margin-bottom:22px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow .rule{ width:36px; height:1px; background:var(--gold); }
+  h1{
+    font-size:clamp(2.4rem, 6vw, 4.6rem);
+    font-weight:800;
+    line-height:1.22;
+    max-width:16ch;
+    margin-bottom:28px;
+  }
+  h1 em{ font-style:normal; color:var(--gold); }
+  .hero p{
+    max-width:52ch; color:var(--muted); font-size:1.15rem; margin-bottom:44px;
+  }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    background:var(--gold); color:#161307; font-weight:700; font-size:0.95rem;
+    padding:15px 26px; border-radius:3px; border:none; cursor:pointer;
+    transition:transform 0.2s, box-shadow 0.2s;
+    width:fit-content;
+  }
+  .btn:hover{ transform:translateY(-2px); box-shadow:0 10px 30px -8px rgba(232,184,75,0.5); }
+  .btn:focus-visible, a:focus-visible, button:focus-visible{
+    outline:2px solid var(--cyan); outline-offset:3px;
+  }
+
+  /* Hero blueprint drawing */
+  .blueprint-frame{
+    margin-top:56px; border:1px solid var(--line); border-radius:6px;
+    background:var(--surface); padding:20px; max-width:640px;
+    position:relative;
+  }
+  .blueprint-frame .coord{
+    position:absolute; top:8px; inset-inline-start:12px;
+    font-size:0.7rem; color:var(--muted);
+  }
+  .blueprint-svg{ width:100%; height:auto; display:block; }
+  .draw{
+    stroke-dasharray: 900;
+    stroke-dashoffset: 900;
+    animation: drawline 2.4s ease forwards;
+  }
+  @keyframes drawline{ to{ stroke-dashoffset:0; } }
+
+  /* LAYERS — signature interactive section */
+  .layers{ padding-top:140px; padding-bottom:120px; }
+  .section-head{ margin-bottom:56px; max-width:60ch; }
+  .section-head .tag{ font-size:0.78rem; color:var(--cyan); margin-bottom:14px; }
+  .section-head h2{ font-size:clamp(1.7rem, 3.4vw, 2.4rem); font-weight:700; margin-bottom:14px; }
+  .section-head p{ color:var(--muted); }
+
+  .layer-app{
+    display:grid; grid-template-columns: 260px 1fr; gap:0;
+    border:1px solid var(--line); border-radius:8px; overflow:hidden;
+    background:var(--surface);
+  }
+  .layer-tabs{ border-inline-end:1px solid var(--line); }
+  .layer-tab{
+    display:block; width:100%; text-align:start; background:none; border:none;
+    color:var(--muted); font-family:inherit; font-size:0.98rem; cursor:pointer;
+    padding:20px 22px; border-bottom:1px solid var(--line);
+    transition:background 0.2s, color 0.2s;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .layer-tab .coord{ font-size:0.72rem; color:var(--muted); opacity:0.7; }
+  .layer-tab:last-child{ border-bottom:none; }
+  .layer-tab:hover{ background:var(--surface-2); color:var(--ink); }
+  .layer-tab.active{ background:var(--surface-2); color:var(--gold); border-inline-start:3px solid var(--gold); }
+  .layer-tab.active .coord{ color:var(--gold); opacity:0.8; }
+
+  .layer-view{ position:relative; min-height:380px; }
+  .layer-canvas{
+    position:absolute; inset:0;
+    background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:32px 32px;
+    display:flex; align-items:center; justify-content:center; padding:40px;
+  }
+  .layer-content{ display:none; max-width:520px; text-align:center; }
+  .layer-content.active{ display:block; animation:fadein 0.4s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .layer-content h3{ font-size:1.3rem; margin-bottom:12px; color:var(--ink); }
+  .layer-content p{ color:var(--muted); font-size:0.98rem; }
+  .layer-visual{ margin-bottom:22px; height:90px; display:flex; align-items:center; justify-content:center; gap:6px; }
+
+  /* grid vis */
+  .lv-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; width:200px; }
+  .lv-grid div{ height:18px; background:var(--gold); opacity:0.85; border-radius:2px; }
+  .lv-grid div:nth-child(3), .lv-grid div:nth-child(7){ opacity:0.25; }
+
+  /* type vis */
+  .lv-type{ font-weight:800; font-size:2.4rem; color:var(--gold); }
+  .lv-type span{ font-family:'JetBrains Mono',monospace; font-size:0.9rem; color:var(--muted); display:block; margin-top:6px; font-weight:400;}
+
+  /* color vis */
+  .lv-color{ display:flex; gap:8px; }
+  .lv-color div{ width:30px; height:30px; border-radius:50%; }
+
+  /* motion vis */
+  .lv-motion{ width:14px; height:14px; background:var(--cyan); border-radius:50%; animation:motionmove 1.6s ease-in-out infinite; }
+  @keyframes motionmove{ 0%,100%{ transform:translateX(-60px);} 50%{ transform:translateX(60px);} }
+
+  /* PRINCIPLES */
+  .principles{ padding-top:60px; padding-bottom:120px; }
+  .principle-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden;
+  }
+  .principle{
+    background:var(--surface); padding:32px 28px; position:relative;
+    transition:background 0.2s;
+  }
+  .principle:hover{ background:var(--surface-2); }
+  .principle .coord{ font-size:0.72rem; color:var(--cyan); margin-bottom:16px; display:block; }
+  .principle h3{ font-size:1.1rem; margin-bottom:10px; }
+  .principle p{ color:var(--muted); font-size:0.92rem; }
+
+  /* PROCESS */
+  .process{ padding-top:40px; padding-bottom:130px; }
+  .steps{ display:flex; flex-direction:column; }
+  .step{
+    display:grid; grid-template-columns:90px 1fr; gap:24px;
+    padding:30px 0; border-top:1px solid var(--line);
+    align-items:baseline;
+  }
+  .steps .step:last-child{ border-bottom:1px solid var(--line); }
+  .step .num{ font-family:'JetBrains Mono',monospace; color:var(--gold); font-size:0.95rem; }
+  .step h3{ font-size:1.15rem; margin-bottom:8px; }
+  .step p{ color:var(--muted); font-size:0.95rem; max-width:60ch; }
+
+  footer{
+    padding:60px 5vw 40px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;
+    color:var(--muted); font-size:0.88rem;
+  }
+
+  @media (max-width:760px){
+    nav{ display:none; }
+    .layer-app{ grid-template-columns:1fr; }
+    .layer-tabs{ border-inline-end:none; border-bottom:1px solid var(--line); display:flex; overflow-x:auto; }
+    .layer-tab{ border-bottom:none; white-space:nowrap; }
+    .layer-tab.active{ border-inline-start:none; border-bottom:3px solid var(--gold); }
+    .step{ grid-template-columns:1fr; gap:8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<header>
+  <div class="logo"><span class="dot"></span> نقشه‌ی صفحه</div>
+  <nav>
+    <a href="#layers">لایه‌ها</a>
+    <a href="#principles">اصول</a>
+    <a href="#process">فرآیند</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow"><span class="rule"></span> راهنمای طراحی وب</div>
+    <h1>طراحی وب یعنی <em>تصمیم گرفتن</em>، نه تزئین کردن</h1>
+    <p>هر صفحه از چند لایه‌ی نامرئی ساخته می‌شود: یک شبکه که فضا را تقسیم می‌کند، تایپوگرافی که سلسله‌مراتب می‌سازد، رنگی که توجه را هدایت می‌کند و حرکتی که زمان را روایت می‌کند. این صفحه همان لایه‌ها را باز می‌کند.</p>
+    <a href="#layers" class="btn">شروع کن با لایه‌ها ↓</a>
+
+    <div class="blueprint-frame">
+      <span class="coord mono">FIG. 01 — ANATOMY</span>
+      <svg class="blueprint-svg" viewBox="0 0 600 220" fill="none">
+        <rect x="10" y="10" width="580" height="200" stroke="#2A313C" stroke-width="1"/>
+        <rect class="draw" x="30" y="28" width="180" height="18" rx="2" stroke="#4FA3D1" stroke-width="1.5"/>
+        <rect class="draw" x="30" y="60" width="540" height="1" stroke="#2A313C"/>
+        <rect class="draw" x="30" y="80" width="260" height="90" rx="2" stroke="#E8B84B" stroke-width="1.5"/>
+        <rect class="draw" x="310" y="80" width="260" height="42" rx="2" stroke="#8B93A1" stroke-width="1.2"/>
+        <rect class="draw" x="310" y="128" width="260" height="42" rx="2" stroke="#8B93A1" stroke-width="1.2"/>
+        <rect class="draw" x="30" y="184" width="540" height="14" rx="2" stroke="#2A313C" stroke-width="1.2"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="layers" id="layers">
+    <div class="section-head">
+      <div class="tag mono">// INTERACTIVE</div>
+      <h2>یک صفحه، چهار لایه‌ی شفاف</h2>
+      <p>مثل ورق‌های شفاف روی نقشه‌ی معماری، هر لایه فقط یک تصمیم را نشان می‌دهد. روی هرکدام بزن تا آن تصمیم را جدا ببینی.</p>
+    </div>
+
+    <div class="layer-app">
+      <div class="layer-tabs" role="tablist">
+        <button class="layer-tab active" data-target="grid"><span>چیدمان و شبکه</span><span class="coord mono">A1</span></button>
+        <button class="layer-tab" data-target="type"><span>تایپوگرافی</span><span class="coord mono">B2</span></button>
+        <button class="layer-tab" data-target="color"><span>رنگ</span><span class="coord mono">C1</span></button>
+        <button class="layer-tab" data-target="motion"><span>حرکت</span><span class="coord mono">D3</span></button>
+      </div>
+      <div class="layer-view">
+        <div class="layer-canvas">
+          <div class="layer-content active" id="grid">
+            <div class="layer-visual"><div class="lv-grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
+            <h3>شبکه، جای هر چیز را تعیین می‌کند</h3>
+            <p>پیش از انتخاب رنگ یا فونت، یک ستون‌بندی مشخص می‌کند فاصله‌ها چقدر باشند و عناصر کجا بایستند. شبکه‌ی نامرئی، چشم را بدون آنکه حس شود هدایت می‌کند.</p>
+          </div>
+          <div class="layer-content" id="type">
+            <div class="layer-visual lv-type">Aa<span>وزیرمتن — نمایش و متن</span></div>
+            <h3>تایپوگرافی، شخصیت صفحه است</h3>
+            <p>اندازه، وزن و فاصله‌ی حروف تعیین می‌کند خواننده اول به کجا نگاه کند. یک مقیاس تایپوگرافی روشن، سلسله‌مراتب را بدون خط‌کشی اضافه می‌سازد.</p>
+          </div>
+          <div class="layer-content" id="color">
+            <div class="layer-visual lv-color"><div style="background:#E8B84B"></div><div style="background:#4FA3D1"></div><div style="background:#8B93A1"></div><div style="background:#1D232C;border:1px solid #2A313C"></div></div>
+            <h3>رنگ، توجه را هدایت می‌کند</h3>
+            <p>یک لهجه‌ی رنگی، نه یک پالت شلوغ. رنگ اصلی فقط برای تصمیم‌های مهم به‌کار می‌رود؛ بقیه‌ی صفحه ساکت می‌ماند تا آن یک نقطه دیده شود.</p>
+          </div>
+          <div class="layer-content" id="motion">
+            <div class="layer-visual"><div class="lv-motion"></div></div>
+            <h3>حرکت، زمان را روایت می‌کند</h3>
+            <p>انیمیشن باید معنا داشته باشد، نه فقط چشم‌نواز باشد؛ نشان بده چیزی ظاهر شد، تغییر کرد یا آماده‌ی واکنش است. حرکت کم و دقیق، از حرکت زیاد و پراکنده قوی‌تر است.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="principles" id="principles">
+    <div class="section-head">
+      <div class="tag mono">// PRINCIPLES</div>
+      <h2>اصولی که پشت صفحه‌های خوب پنهانند</h2>
+      <p>مختصات، جای هر اصل را در شبکه‌ی طراحی نشان می‌دهد؛ نه ترتیب اهمیت آن‌ها را.</p>
+    </div>
+    <div class="principle-grid">
+      <div class="principle">
+        <span class="coord mono">A1</span>
+        <h3>سلسله‌مراتب واضح</h3>
+        <p>در هر لحظه، فقط یک چیز باید مهم‌ترین چیز روی صفحه باشد. بقیه باید آگاهانه عقب بنشینند.</p>
+      </div>
+      <div class="principle">
+        <span class="coord mono">A2</span>
+        <h3>فاصله‌ی هدفمند</h3>
+        <p>فضای خالی تزئین نیست؛ گروه‌بندی است. چیزهایی که به هم مربوط‌اند نزدیک می‌شوند، بقیه فاصله می‌گیرند.</p>
+      </div>
+      <div class="principle">
+        <span class="coord mono">B1</span>
+        <h3>ثبات در سراسر صفحه</h3>
+        <p>یک دکمه همیشه مثل دکمه به‌نظر برسد. وقتی الگوها تکرار می‌شوند، کاربر یاد می‌گیرد بدون فکر کردن حرکت کند.</p>
+      </div>
+      <div class="principle">
+        <span class="coord mono">B2</span>
+        <h3>محتوا، نه تزئین</h3>
+        <p>هر رنگ، خط و سایه باید کاری انجام دهد. اگر حذفش چیزی را خراب نمی‌کند، جایش روی صفحه نیست.</p>
+      </div>
+      <div class="principle">
+        <span class="coord mono">C1</span>
+        <h3>واکنش‌گرایی واقعی</h3>
+        <p>موبایل نسخه‌ی کوچک‌شده‌ی دسکتاپ نیست؛ چیدمانی جداست که همان تصمیم‌ها را برای فضای دیگری بازمی‌نویسد.</p>
+      </div>
+      <div class="principle">
+        <span class="coord mono">C2</span>
+        <h3>دسترسی‌پذیری از پایه</h3>
+        <p>کنتراست خوانا، فوکوس قابل‌مشاهده و متن جایگزین برای تصویر، بخشی از طراحی‌اند، نه مرحله‌ی آخر آن.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="process" id="process">
+    <div class="section-head">
+      <div class="tag mono">// WORKFLOW</div>
+      <h2>از ایده تا صفحه‌ی زنده</h2>
+      <p>این بخش واقعاً یک توالی است؛ هر مرحله روی مرحله‌ی قبل بنا می‌شود.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="num mono">01</span>
+        <div><h3>کشف و تعریف مسئله</h3><p>پیش از باز کردن هر ابزار طراحی، مشخص می‌شود این صفحه برای چه کسی و برای چه یک تصمیم ساخته می‌شود.</p></div>
+      </div>
+      <div class="step">
+        <span class="num mono">02</span>
+        <div><h3>ساخت شبکه و ساختار</h3><p>اسکلت صفحه با شبکه و بلوک‌های خام چیده می‌شود؛ هنوز رنگ و فونت نهایی مطرح نیست.</p></div>
+      </div>
+      <div class="step">
+        <span class="num mono">03</span>
+        <div><h3>تعیین سیستم بصری</h3><p>پالت رنگ، مقیاس تایپوگرافی و فاصله‌ها روی همان اسکلت اعمال می‌شوند تا شخصیت صفحه شکل بگیرد.</p></div>
+      </div>
+      <div class="step">
+        <span class="num mono">04</span>
+        <div><h3>آزمایش و پالایش</h3><p>صفحه در اندازه‌های مختلف و با کاربران واقعی آزموده می‌شود؛ آنچه کار نمی‌کند، حذف یا اصلاح می‌شود.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>نقشه‌ی صفحه — یک راهنمای کوچک درباره‌ی طراحی وب</div>
+  <div class="mono">v1.0</div>
+</footer>
+
+<script>
+  const tabs = document.querySelectorAll('.layer-tab');
+  const contents = document.querySelectorAll('.layer-content');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.target).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
